@@ -1,0 +1,99 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "RDS instance for askdarcel.org.",
+
+  "Parameters" : {
+
+    "DBName" : {
+      "Description" : "Name of the database",
+      "Type" : "String"
+    },
+
+    "DBEngine" : {
+      "Description" : "DB Engine",
+      "Type" : "String"
+    },
+
+    "DBEngineVersion" : {
+      "Description" : "DB Engine version",
+      "Type" : "String"
+    },
+
+    "DBAllocatedStorage" : {
+      "Description" : "The allocated storage size specified in gigabytes",
+      "Type" : "String"
+    },
+
+    "DBInstanceClass" : {
+      "Description" : "The name of the compute and memory capacity class of the DB instance",
+      "Type" : "String"
+    },
+
+    "DBUser" : {
+      "Description" : "Username of the master DB user",
+      "Type" : "String"
+    },
+
+    "DBPassword" : {
+      "Description" : "Password of the master DB user",
+      "Type" : "String"
+    },
+
+    "VpcId" : {
+      "Description" : "VPC in which to create the DB",
+      "Type" : "String"
+    },
+
+    "SubnetIds" : {
+      "Description" : "Subnets to use for the DB subnet group",
+      "Type" : "CommaDelimitedList"
+    }
+
+  },
+
+  "Resources" : {
+    "DB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+	"DBName" : { "Ref" : "DBName" },
+	"AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
+	"DBInstanceClass" : { "Ref" : "DBInstanceClass" },
+	"Engine" : { "Ref" : "DBEngine" },
+	"EngineVersion" : { "Ref" : "DBEngineVersion" },
+	"MasterUsername" : { "Ref" : "DBUser" },
+	"MasterUserPassword" : { "Ref" : "DBPassword" },
+	"PubliclyAccessible" : true,
+	"DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
+	"VPCSecurityGroups" : [ { "Ref" : "DBSecurityGroup" } ],
+	"Tags" : [ { "Key" : "Name", "Value" : "Askdarcel Database" } ]
+      },
+      "DeletionPolicy" : "Snapshot"
+    },
+
+    "DBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+	"DBSubnetGroupDescription" : "DB Subnet Group for the askdarcel database",
+	"SubnetIds" : { "Ref" : "SubnetIds" },
+	"Tags" : [ { "Key" : "Name", "Value" : "Askdarcel DB Subnet Group" } ]
+      }
+    },
+
+    "DBSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP Access on Port 5432",
+	"VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "5432",
+            "ToPort" : "5432",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ]
+      }
+    }
+  }
+}

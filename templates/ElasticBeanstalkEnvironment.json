@@ -1,0 +1,70 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "ApplicationName": {
+      "Description": "The name of the application.",
+      "Type": "String"
+    },
+    "ApplicationDescription": {
+      "Description": "A description of the application.",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "Application": {
+      "Type": "AWS::ElasticBeanstalk::Application",
+      "Properties": {
+	"ApplicationName": { "Ref": "ApplicationName" },
+        "Description": { "Ref": "ApplicationDescription" }
+      }
+    },
+
+    "ApplicationVersion": {
+      "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Properties": {
+        "ApplicationName": { "Ref": "Application" },
+        "Description": "AWS ElasticBeanstalk Sample Application Version",
+        "SourceBundle": {
+          "S3Bucket": { "Fn::Join": [ "-", [ "elasticbeanstalk-samples", { "Ref": "AWS::Region" } ] ] },
+          "S3Key": "php-sample.zip"
+        }
+      }
+    },
+
+    "ConfigurationTemplate": {
+      "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+      "Properties": {
+        "ApplicationName": { "Ref": "Application" },
+        "Description": "AWS ElasticBeanstalk Sample Configuration Template",
+        "OptionSettings": [
+          {
+            "Namespace": "aws:autoscaling:asg",
+            "OptionName": "MinSize",
+            "Value": "1"
+          },
+          {
+            "Namespace": "aws:autoscaling:asg",
+            "OptionName": "MaxSize",
+            "Value": "6"
+          },
+          {
+            "Namespace": "aws:elasticbeanstalk:environment",
+            "OptionName": "EnvironmentType",
+            "Value": "LoadBalanced"
+          }
+        ],
+        "SolutionStackName": "64bit Amazon Linux running PHP 5.3"
+      }
+    },
+    "Environment": {
+      "Type": "AWS::ElasticBeanstalk::Environment",
+      "Properties": {
+        "ApplicationName": { "Ref": "Application" },
+        "Description": { "Fn::Join": [ " ", [ "AWS ElasticBeanstalk Environment:", { "Ref": "ApplicationDescription" } ] ] },
+        "TemplateName": { "Ref": "ConfigurationTemplate" },
+        "VersionLabel": { "Ref": "ApplicationVersion" }
+      }
+    }
+  }
+}
