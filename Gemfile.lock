@@ -23,7 +23,7 @@ GEM
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
     rainbow (1.99.2)
-    stacker (0.2.1)
+    stacker (0.3.0)
       activesupport (~> 4.0)
       aws-sdk (~> 1.25)
       coderay (~> 1.1)
@@ -41,7 +41,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  stacker (~> 0.2.1)
+  stacker (~> 0.3.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

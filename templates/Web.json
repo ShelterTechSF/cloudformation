@@ -1,0 +1,145 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "ELB and EC2 instances for AskDarcel's web server.",
+
+  "Parameters" : {
+
+    "KeyName" : {
+      "Description" : "Name of the production EC2 KeyPair to enable SSH to the instance",
+      "Type" : "String"
+    },
+
+    "AZs" : {
+      "Description" : "Availability zones in which to create EC2 instances",
+      "Type" : "CommaDelimitedList"
+    },
+
+    "InstanceImageId" : {
+      "Description" : "EC2 image id",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "EC2 instance type",
+      "Type" : "String",
+      "Default" : "m1.small",
+      "AllowedValues" : [ "t2.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium", "c3.large","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "ASGMinSize" : {
+      "Description" : "Minimum amount of instances to get going.",
+      "Type": "String",
+      "Default": "3"
+    },
+
+    "ASGMaxSize" : {
+      "Description" : "Maximum amount of instances attached to the ASG.",
+      "Type": "String",
+      "Default": "3"
+    },
+
+    "HostedZone" : {
+      "Type" : "String",
+      "Description" : "The hosted zone in which the DNS record should reside"
+    },
+
+    "DNSName" : {
+      "Type" : "String",
+      "Description" : "The host name to map to the ELB"
+    }
+
+  },
+
+  "Resources" : {
+    "WebPublicELB" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "AvailabilityZones" : { "Ref" : "AZs" },
+        "Listeners" :
+        [
+          { "LoadBalancerPort" : "80",
+            "InstancePort" : "3000",
+            "Protocol" : "HTTP"
+          }
+        ]
+      }
+    },
+
+    "ApplicationLaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "ImageId" : { "Ref" : "InstanceImageId" },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "KeyName": { "Ref": "KeyName" },
+        "SecurityGroups" : [
+          { "Ref" : "ApplicationSecurityGroup" }
+        ]
+      }
+    },
+
+    "ApplicationAutoScalingGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy" : {
+          "AutoScalingRollingUpdate" : {
+          "MaxBatchSize" : "1",
+          "MinInstancesInService" : { "Ref" : "ASGMinSize" },
+          "PauseTime" : "PT15M00S"
+        }
+      },
+      "Properties" : {
+        "AvailabilityZones" : { "Ref" : "AZs" },
+        "LaunchConfigurationName" : { "Ref" : "ApplicationLaunchConfig" },
+        "MinSize" : { "Ref" : "ASGMinSize" },
+        "MaxSize" : { "Ref" : "ASGMaxSize" },
+        "LoadBalancerNames" : [ { "Ref" : "WebPublicELB" } ]
+      }
+    },
+
+    "ApplicationSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP Access on Port 80 and Port 22",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3000",
+            "ToPort" : "3000",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+
+    "WebDNSRecord" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "Name" : { "Fn::Join" : [ "", [ { "Ref" : "DNSName" }, "." ] ] },
+        "Type" : "A",
+        "HostedZoneName" : { "Fn::Join" : [ "", [ {"Ref" : "HostedZone" }, "." ] ] },
+        "AliasTarget" : {
+          "HostedZoneId" : { "Fn::GetAtt" : [ "WebPublicELB", "CanonicalHostedZoneNameID" ] },
+          "DNSName" : { "Fn::GetAtt" : [ "WebPublicELB", "DNSName" ] }
+        },
+        "Comment" : "DNS record for the web server ELB"
+      }
+    }
+
+  },
+
+  "Outputs" : {
+  }
+}

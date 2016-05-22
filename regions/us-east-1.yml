@@ -1,5 +1,109 @@
 defaults:
   parameters:
     CidrBlock: '10.0'
+    AZA: &AZA 'us-east-1b'
+    AZB: &AZB 'us-east-1c'
+    AZs:
+      - *AZA
+      - *AZB
+    InstanceImageId: ami-311a1a5b
+    KeyName: sheltertech_staging_20160325
+    VpcId:
+      Stack: VPC
+      Output: VpcId
+    InternetGateway:
+      Stack: VPC
+      Output: InternetGateway
+    PublicSubnets: &PublicSubnets
+      - Stack: PublicSubnetA
+        Output: SubnetId
+      - Stack: PublicSubnetB
+        Output: SubnetId
+    PublicRouteTable:
+      Stack: VPC
+      Output: PublicRouteTable
+    PrivateSubnets: &PrivateSubnets
+      - Stack: PrivateSubnetA
+        Output: SubnetId
+      - Stack: PrivateSubnetB
+        Output: SubnetId
+
+    ECSCluster:
+      Stack: ECSCluster
+      Output: ECSCluster
+
 stacks:
+
+  - name: IAMInfrastructureGroup
+    capabilities: CAPABILITY_IAM
+
+  ###################
+  # VPC and Subnets #
+  ###################
+
   - name: VPC
+
+  - name: CommonSecurityGroup
+
+  - name: PublicSubnetA
+    template_name: PublicSubnet
+    parameters:
+      AZ: *AZA
+      CidrAZMask: '255'
+
+  - name: PublicSubnetB
+    template_name: PublicSubnet
+    parameters:
+      AZ: *AZB
+      CidrAZMask: '254'
+
+  - name: PrivateSubnetA
+    template_name: PrivateSubnet
+    parameters:
+      AZ: *AZA
+      CidrAZMask: '0'
+      NATGateway:
+        - Stack: PublicSubnetA
+          Output: NATGateway
+
+  - name: PrivateSubnetB
+    template_name: PrivateSubnet
+    parameters:
+      AZ: *AZB
+      CidrAZMask: '1'
+      NATGateway:
+        - Stack: PublicSubnetB
+          Output: NATGateway
+
+  ################
+  # AskDarcel DB #
+  ################
+
+  - name: DB
+    parameters:
+      DBName: askdarcel
+      DBEngine: postgres
+      DBEngineVersion: '9.5'
+      DBAllocatedStorage: '10'
+      DBInstanceClass: db.t2.micro
+      DBUser: master
+      DBPassword: changeme123
+      SubnetIds: *PublicSubnets
+
+  - name: Web
+    capabilities: CAPABILITY_IAM
+    parameters:
+      InstanceType: t2.micro
+      ASGMinSize: '1'
+      ASGMaxSize: '3'
+      HostedZone: askdarcel.org
+      DNSName: staging.askdarcel.org
+
+  - name: ECSCluster
+    capabilities: CAPABILITY_IAM
+    parameters:
+      MaxSize: '2'
+      SubnetIds: *PrivateSubnets
+      SecurityGroupIds:
+        - Stack: CommonSecurityGroup
+          Output: SecurityGroupId

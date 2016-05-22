@@ -1,0 +1,94 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Create a public subnet.",
+
+  "Parameters" : {
+
+    "VpcId" : {
+      "Type" : "String",
+      "Description" : "ID of the VPC used to create the Public Subnet"
+    },
+
+    "InternetGateway" : {
+      "Type" : "String",
+      "Description" : "ID of the Internet Gateway associated with the VPC."
+    },
+
+    "AZ" : {
+      "Type" : "String",
+      "Description" : "Name of the Availability Zone for the Public Subnet"
+    },
+
+    "CidrBlock": {
+      "Type": "String",
+      "Description" : "CIDR Block of the VPC."
+    },
+
+    "CidrAZMask": {
+      "Type": "String",
+      "Description" : "CIDR Block of the VPC."
+    },
+
+    "PublicRouteTable": {
+      "Type": "String",
+      "Description" : "Route table to associate with the subnet."
+    }
+
+  },
+
+  "Resources" : {
+    "PublicSubnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VpcId" },
+	"AvailabilityZone" : { "Ref" : "AZ" },
+        "CidrBlock" : { "Fn::Join" : [ "", [
+	  { "Ref" : "CidrBlock" },
+	  ".",
+	  { "Ref" : "CidrAZMask" },
+	  ".0/24"
+	] ] },
+        "Tags" : [
+          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
+          { "Key" : "Network", "Value" : "Public" },
+	  { "Key" : "Name", "Value" : "Public Subnet" }
+        ]
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "PublicSubnet" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
+
+    "NAT" : {
+      "Type" : "AWS::EC2::NatGateway",
+      "Properties" : {
+	"AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
+	"SubnetId" : { "Ref" : "PublicSubnet"}
+      }
+    },
+
+    "EIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+	"Domain" : "vpc"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "SubnetId" : {
+      "Description" : "Public Subnet",
+      "Value" : { "Ref" : "PublicSubnet"  }
+    },
+    "NATGateway": {
+      "Description" : "NAT Gateway",
+      "Value" : { "Ref" : "NAT"  }
+    }
+  }
+}
