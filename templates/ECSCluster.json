@@ -132,6 +132,7 @@
         }
       },
       "Properties": {
+        "SecurityGroups" : { "Ref" : "SecurityGroupIds" },
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionToAMI", { "Ref" : "AWS::Region" }, "AMIID" ] },
         "InstanceType"   : { "Ref" : "InstanceType" },
         "IamInstanceProfile": { "Ref": "EC2InstanceProfile" },

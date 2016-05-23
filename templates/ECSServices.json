@@ -1,0 +1,45 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"HostPort": {
+			"Type": "String",
+			"Description": "Host port"
+		},
+    "ECSCluster": {
+      "Type": "String",
+      "Description": "ECSCluster"
+    }
+	},
+	"Resources": {
+		"taskdefinition": {
+			"Type": "AWS::ECS::TaskDefinition",
+			"Properties": {
+				"ContainerDefinitions": [{
+					"Name": "askdarcel-api",
+					"Cpu": "1",
+					"Essential": "true",
+					"Image": "sheltertechsf/askdarcel-api:branch-jfhamlin-docker",
+					"Memory": "300",
+					"PortMappings": [{
+						"HostPort": {
+							"Ref": "HostPort"
+						},
+						"ContainerPort": "8080"
+					}]
+				}]
+			}
+		},
+		"service": {
+			"Type": "AWS::ECS::Service",
+			"Properties": {
+				"Cluster": {
+					"Ref": "ECSCluster"
+				},
+				"DesiredCount": "1",
+				"TaskDefinition": {
+					"Ref": "taskdefinition"
+				}
+			}
+		}
+	}
+}
