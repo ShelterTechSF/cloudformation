@@ -1,0 +1,68 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Parameters": {
+		"SubnetId": {
+			"Description": "Subnets to use for the DB subnet group",
+			"Type": "String"
+		},
+		"KeyName": {
+			"Description": "Name of the production EC2 KeyPair to enable SSH to the instance",
+			"Type": "String"
+		},
+		"InstanceImageId": {
+			"Description": "EC2 image id",
+			"Type": "String"
+		},
+    "VpcId": {
+      "Description": "VPC Id",
+      "Type": "String"
+    },
+    "PrivateSubnetSecurityGroup": {
+      "Description": "SG for the private subnet",
+      "Type": "String"
+    },
+		"InstanceType": {
+			"Description": "EC2 instance type",
+			"Type": "String",
+			"Default": "m1.small",
+			"AllowedValues": ["t2.micro", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.medium", "c3.large", "c1.xlarge", "cc1.4xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		}
+	},
+	"Resources": {
+    "BastionSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable access to the Bastion host",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [ { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : "0.0.0.0/0" } ],
+        "SecurityGroupEgress"  : [ { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "DestinationSecurityGroupId" : { "Ref" : "PrivateSubnetSecurityGroup" }}]
+      }
+    },
+    "BastionIPAddress" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "Domain" : "vpc",
+        "InstanceId" : { "Ref" : "BastionHost" }
+      }
+    },
+		"BastionHost": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"InstanceType": {
+					"Ref": "InstanceType"
+				},
+				"KeyName": {
+					"Ref": "KeyName"
+				},
+				"SubnetId": {
+					"Ref": "SubnetId"
+				},
+				"ImageId": {
+					"Ref": "InstanceImageId"
+				},
+        "SecurityGroupIds" : [{ "Ref" : "BastionSecurityGroup" }]
+			}
+		}
+	}
+}

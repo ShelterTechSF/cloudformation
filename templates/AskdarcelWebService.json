@@ -1,0 +1,208 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "VpcId": {
+      "Type": "String",
+      "Description": "ID of the VPC"
+    },
+    "ContainerImage": {
+      "Type": "String",
+      "Description": "Reference to the image to deploy (e.g. a Dockerhub image).",
+      "Default": "sheltertechsf/askdarcel-web:latest"
+    },
+    "HostPort": {
+      "Type": "String",
+      "Description": "Host mapping of the exposed container port."
+    },
+    "ContainerPort": {
+      "Type": "String",
+      "Description": "Container port to expose on the host as HostPort."
+    },
+    "ECSCluster": {
+      "Type": "String",
+      "Description": "ECSCluster"
+    },
+    "PublicSubnets": {
+      "Description": "Public subnets in which to place the ELB.",
+      "Type": "CommaDelimitedList"
+    },
+    "ServerName": {
+      "Description": "Name of the Askdarcel web host.",
+      "Type": "String"
+    },
+    "ApiURL": {
+      "Description": "URL of the AskDarcel API.",
+      "Type": "String"
+    },
+    "HostedZoneName" : {
+      "Type" : "String",
+      "Description" : "The name of the HostedZone to create DNS records in.",
+      "Default": "askdarcel.org."
+    }
+  },
+
+  "Resources": {
+    "DNSRecord": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName": { "Ref": "HostedZoneName" },
+	"Name": { "Ref": "ServerName" },
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": { "Fn::GetAtt": [ "ELB", "CanonicalHostedZoneNameID" ] },
+          "DNSName": { "Fn::GetAtt": [ "ELB", "DNSName" ] }
+        },
+        "Comment": "Alias Record for the Askdarcel web app ELB"
+      }
+    },
+
+    "ELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Subnets": { "Ref": "PublicSubnets" },
+        "SecurityGroups": [ { "Ref": "ELBSecurityGroup" } ],
+        "Listeners": [
+          { "LoadBalancerPort": "80",
+            "InstancePort": { "Ref": "HostPort" },
+            "Protocol": "HTTP"
+          }
+        ]
+      }
+    },
+
+    "ELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Restricts ELB access.",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress":
+        [
+          { "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress":
+        [
+          { "IpProtocol": "tcp",
+            "FromPort": { "Ref": "HostPort" },
+            "ToPort": { "Ref": "HostPort" },
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+
+    "TaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+	"ContainerDefinitions": [{
+	  "Name": "askdarcel-web",
+	  "Cpu": "1",
+	  "Essential": "true",
+	  "Image": { "Ref": "ContainerImage" },
+	  "Memory": "300",
+	  "PortMappings": [{
+	    "HostPort": { "Ref": "HostPort" },
+	    "ContainerPort": { "Ref": "ContainerPort" }
+	  }],
+	  "Environment": [
+	    {
+	      "Name": "environment",
+	      "Value": "production"
+	    },
+	    {
+	      "Name": "API_URL",
+	      "Value": { "Ref": "ApiURL" }
+	    },
+	    {
+	      "Name": "SERVER_NAME",
+	      "Value": { "Ref": "ServerName" }
+	    },
+	    {
+	      "Name": "PORT",
+	      "Value": { "Ref": "ContainerPort" }
+	    }
+	  ]
+	}]
+      }
+    },
+
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+	"Cluster": {
+	  "Ref": "ECSCluster"
+	},
+	"DesiredCount": "1",
+	"TaskDefinition": { "Ref": "TaskDefinition" },
+        "LoadBalancers": [
+          {
+            "ContainerName": "askdarcel-web",
+            "ContainerPort": { "Ref": "ContainerPort" },
+            "LoadBalancerName": { "Ref": "ELB" }
+          }
+        ],
+	"Role": { "Ref": "ServiceRole" }
+      }
+    },
+
+    "ServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ecs.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ecs-service",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticloadbalancing:Describe*",
+                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                    "ec2:Describe*",
+                    "ec2:AuthorizeSecurityGroupIngress"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "ELB": {
+      "Description": "The Askdarcel Web loadbalancer.",
+      "Value": { "Ref": "ELB"  }
+    },
+    "Service": {
+      "Description": "The Askdarcel Web ECS service.",
+      "Value": { "Ref": "Service"  }
+    },
+    "TaskDefinition": {
+      "Description": "The TaskDefinition to run.",
+      "Value": { "Ref": "TaskDefinition"  }
+    }
+  }
+}

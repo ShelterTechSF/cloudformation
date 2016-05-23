@@ -18,9 +18,14 @@
       "Default" : "1",
       "Description": "Number of instances to launch in your ECS cluster"
     },
+    "MinSize": {
+      "Type": "Number",
+      "Default" : "2",
+      "Description": "Minimum number of instances that can be launched in your ECS cluster"
+    },
     "MaxSize": {
       "Type": "Number",
-      "Default" : "1",
+      "Default" : "3",
       "Description": "Maximum number of instances that can be launched in your ECS cluster"
     },
     "InstanceType" : {
@@ -67,7 +72,7 @@
       "Properties" : {
         "VPCZoneIdentifier" : { "Ref" : "SubnetIds" },
         "LaunchConfigurationName" : { "Ref" : "ContainerInstances" },
-        "MinSize" : "1",
+        "MinSize" : { "Ref" : "MinSize" },
         "MaxSize" : { "Ref" : "MaxSize" },
         "DesiredCapacity" : { "Ref" : "DesiredCapacity" },
         "Tags" : [
@@ -132,6 +137,7 @@
         }
       },
       "Properties": {
+        "SecurityGroups" : { "Ref" : "SecurityGroupIds" },
         "ImageId" : { "Fn::FindInMap" : [ "AWSRegionToAMI", { "Ref" : "AWS::Region" }, "AMIID" ] },
         "InstanceType"   : { "Ref" : "InstanceType" },
         "IamInstanceProfile": { "Ref": "EC2InstanceProfile" },

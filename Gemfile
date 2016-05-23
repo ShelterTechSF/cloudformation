@@ -1,3 +1,3 @@
 source 'https://rubygems.org'
 
-gem 'stacker', '~> 0.3.0'
+gem 'stacker', github: 'jfhamlin/stacker', branch: 'jfhamlin/parameter-plugins'

@@ -1,94 +1,135 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description" : "Create a public subnet.",
+  "Description": "Create a public subnet.",
 
-  "Parameters" : {
+  "Parameters": {
 
-    "VpcId" : {
-      "Type" : "String",
-      "Description" : "ID of the VPC used to create the Public Subnet"
+    "VpcId": {
+      "Type": "String",
+      "Description": "ID of the VPC used to create the Public Subnet"
     },
 
-    "InternetGateway" : {
-      "Type" : "String",
-      "Description" : "ID of the Internet Gateway associated with the VPC."
+    "InternetGateway": {
+      "Type": "String",
+      "Description": "ID of the Internet Gateway associated with the VPC."
     },
 
-    "AZ" : {
-      "Type" : "String",
-      "Description" : "Name of the Availability Zone for the Public Subnet"
+    "AZ": {
+      "Type": "String",
+      "Description": "Name of the Availability Zone for the Public Subnet"
     },
 
     "CidrBlock": {
       "Type": "String",
-      "Description" : "CIDR Block of the VPC."
+      "Description": "CIDR Block of the VPC."
     },
 
     "CidrAZMask": {
       "Type": "String",
-      "Description" : "CIDR Block of the VPC."
+      "Description": "CIDR Block of the VPC."
     },
 
     "PublicRouteTable": {
       "Type": "String",
-      "Description" : "Route table to associate with the subnet."
+      "Description": "Route table to associate with the subnet."
+    },
+
+    "NATSecurityGroup": {
+      "Type": "String",
+      "Description": "Security group to assign to the NAT instance."
+    },
+
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the NAT instance."
     }
 
   },
 
-  "Resources" : {
-    "PublicSubnet" : {
-      "Type" : "AWS::EC2::Subnet",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VpcId" },
-	"AvailabilityZone" : { "Ref" : "AZ" },
-        "CidrBlock" : { "Fn::Join" : [ "", [
-	  { "Ref" : "CidrBlock" },
+  "Mappings": {
+    "NATRegionMap": {
+      "us-east-1"     : { "AMI": "ami-184dc970" },
+      "us-west-1"     : { "AMI": "ami-a98396ec" },
+      "us-west-2"     : { "AMI": "ami-290f4119" },
+      "eu-west-1"     : { "AMI": "ami-14913f63" },
+      "eu-central-1"  : { "AMI": "ami-ae380eb3" },
+      "sa-east-1"     : { "AMI": "ami-8122969c" },
+      "ap-southeast-1": { "AMI": "ami-6aa38238" },
+      "ap-southeast-2": { "AMI": "ami-893f53b3" },
+      "ap-northeast-1": { "AMI": "ami-27d6e626" }
+    }
+  },
+
+  "Resources": {
+    "PublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VpcId" },
+	"AvailabilityZone": { "Ref": "AZ" },
+        "CidrBlock": { "Fn::Join": [ "", [
+	  { "Ref": "CidrBlock" },
 	  ".",
-	  { "Ref" : "CidrAZMask" },
+	  { "Ref": "CidrAZMask" },
 	  ".0/24"
 	] ] },
-        "Tags" : [
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" },
-	  { "Key" : "Name", "Value" : "Public Subnet" }
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackName" } },
+          { "Key": "Network", "Value": "Public" },
+	  { "Key": "Name", "Value": "Public Subnet" }
         ]
       }
     },
 
-    "PublicSubnetRouteTableAssociation" : {
-      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties" : {
-        "SubnetId" : { "Ref" : "PublicSubnet" },
-        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+    "PublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnet" },
+        "RouteTableId": { "Ref": "PublicRouteTable" }
       }
     },
 
-    "NAT" : {
-      "Type" : "AWS::EC2::NatGateway",
-      "Properties" : {
-	"AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
-	"SubnetId" : { "Ref" : "PublicSubnet"}
+    "NATInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.micro",
+        "KeyName": { "Ref": "KeyName" },
+        "SourceDestCheck": "false",
+        "ImageId": { "Fn::FindInMap": [ "NATRegionMap", { "Ref": "AWS::Region" }, "AMI" ]},
+	"NetworkInterfaces": [{
+          "GroupSet"               : [{ "Ref": "NATSecurityGroup" }],
+          "AssociatePublicIpAddress": "true",
+          "DeviceIndex"            : "0",
+          "DeleteOnTermination"    : "true",
+          "SubnetId"               : { "Ref": "PublicSubnet" }
+        }],
+	"Tags": [
+	  { "Key": "Name", "Value": "nat-instance" }
+        ],
+	"UserData": { "Fn::Base64": { "Fn::Join": ["", [
+	  "#!/bin/bash\n",
+	  "yum update -y && yum install -y yum-cron && chkconfig yum-cron on"
+	]]}}
       }
     },
 
-    "EIP" : {
-      "Type" : "AWS::EC2::EIP",
-      "Properties" : {
-	"Domain" : "vpc"
+    "EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+	"Domain": "vpc"
       }
     }
   },
 
-  "Outputs" : {
-    "SubnetId" : {
-      "Description" : "Public Subnet",
-      "Value" : { "Ref" : "PublicSubnet"  }
+  "Outputs": {
+    "SubnetId": {
+      "Description": "Public Subnet",
+      "Value": { "Ref": "PublicSubnet"  }
     },
-    "NATGateway": {
-      "Description" : "NAT Gateway",
-      "Value" : { "Ref" : "NAT"  }
+
+    "NATInstance": {
+      "Description": "NAT instance ID",
+      "Value": { "Ref": "NATInstance" }
     }
   }
 }
