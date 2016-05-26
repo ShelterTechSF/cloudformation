@@ -34,6 +34,12 @@ defaults:
 
 stacks:
 
+  - name: SheltertechHostedZone
+    template_name: HostedZone
+    parameters:
+      Name: sheltertech.org
+      Description: "Root HostedZone for the organization's website."
+
   - name: IAMInfrastructureGroup
     capabilities: CAPABILITY_IAM
 
