@@ -1,0 +1,43 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "This template is used to manage DNS for sheltertech.org",
+  "Resources": {
+    "HostedZone": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": "sheltertech.org",
+        "HostedZoneConfig": {
+          "Comment": "HostedZone for sheltertech.org."
+        }
+      }
+    },
+    "SheltertechCNAME" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "DependsOn": "HostedZone",
+      "Properties" : {
+        "HostedZoneName" : "sheltertech.org.",
+        "Comment" : "CNAME to sheltertech S3 Bucket website",
+        "Name" : "sheltertech.org.",
+        "Type" : "A",
+	"AliasTarget" : {
+	  "DNSName" : "sheltertech.org.s3-website-us-east-1.amazonaws.com",
+	  "HostedZoneId" : { "Ref" : "HostedZone" }
+	}
+      }
+    },
+    "WWWSheltertechCNAME" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "DependsOn": "HostedZone",
+      "Properties" : {
+        "HostedZoneName" : "sheltertech.org.",
+        "Comment" : "www.sheltertech.org CNAME",
+        "Name" : "www.sheltertech.org.",
+	"Type" : "A",
+	"AliasTarget" : {
+	  "DNSName" : "www.sheltertech.org.s3-website-us-east-1.amazonaws.com",
+	  "HostedZoneId" : { "Ref" : "HostedZone" }
+	}
+      }
+    }
+  }
+}
