@@ -1,88 +1,88 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
+  "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description" : "Create a private subnet.",
+  "Description": "Create a private subnet.",
 
-  "Parameters" : {
+  "Parameters": {
 
-    "VpcId" : {
-      "Type" : "String",
-      "Description" : "ID of the VPC used to create the Public Subnet"
+    "VpcId": {
+      "Type": "String",
+      "Description": "ID of the VPC used to create the Public Subnet"
     },
 
-    "NATGateway" : {
-      "Type" : "String",
-      "Description" : "ID of the NAT Gateway used to route external traffic."
+    "NATInstance": {
+      "Type": "String",
+      "Description": "ID of the NAT instance used to route external traffic."
     },
 
-    "AZ" : {
-      "Type" : "String",
-      "Description" : "Name of the Availability Zone for the Private Subnet"
+    "AZ": {
+      "Type": "String",
+      "Description": "Name of the Availability Zone for the Private Subnet"
     },
 
     "CidrBlock": {
       "Type": "String",
-      "Description" : "CIDR Block of the VPC."
+      "Description": "CIDR Block of the VPC."
     },
 
     "CidrAZMask": {
       "Type": "String",
-      "Description" : "CIDR Block of the VPC."
+      "Description": "CIDR Block of the VPC."
     }
 
   },
 
-  "Resources" : {
-    "PrivateSubnet" : {
-      "Type" : "AWS::EC2::Subnet",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VpcId" },
-	"AvailabilityZone" : { "Ref" : "AZ" },
-        "CidrBlock" : { "Fn::Join" : [ "", [
-	  { "Ref" : "CidrBlock" },
+  "Resources": {
+    "PrivateSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VpcId" },
+	"AvailabilityZone": { "Ref": "AZ" },
+        "CidrBlock": { "Fn::Join": [ "", [
+	  { "Ref": "CidrBlock" },
 	  ".",
-	  { "Ref" : "CidrAZMask" },
+	  { "Ref": "CidrAZMask" },
 	  ".0/24"
 	] ] },
-        "Tags" : [
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Private" },
-	  { "Key" : "Name", "Value" : "Private Subnet" }
+        "Tags": [
+          { "Key": "Application", "Value": { "Ref": "AWS::StackName" } },
+          { "Key": "Network", "Value": "Private" },
+	  { "Key": "Name", "Value": "Private Subnet" }
         ]
       }
     },
 
-    "PublicSubnetRouteTableAssociation" : {
-      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties" : {
-        "SubnetId" : { "Ref" : "PrivateSubnet" },
-        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+    "PublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PrivateSubnet" },
+        "RouteTableId": { "Ref": "PrivateRouteTable" }
       }
     },
 
-    "PrivateRouteTable" : {
+    "PrivateRouteTable": {
       "Type": "AWS::EC2::RouteTable",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VpcId" },
-        "Tags" : [ { "Key" : "Private" , "Value" : { "Ref" : "AWS::StackId" } } ]
+      "Properties": {
+        "VpcId": { "Ref": "VpcId" },
+        "Tags": [ { "Key": "Private" , "Value": { "Ref": "AWS::StackId" } } ]
       }
     },
 
-    "Route" : {
-      "Type" : "AWS::EC2::Route",
-      "Properties" : {
-	"RouteTableId" : { "Ref" : "PrivateRouteTable" },
-	"DestinationCidrBlock" : "0.0.0.0/0",
-	"NatGatewayId" : { "Ref" : "NATGateway" }
+    "Route": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+	"RouteTableId": { "Ref": "PrivateRouteTable" },
+	"DestinationCidrBlock": "0.0.0.0/0",
+	"InstanceId": { "Ref": "NATInstance" }
       }
     }
 
   },
 
-  "Outputs" : {
-    "SubnetId" : {
-      "Description" : "Private Subnet",
-      "Value" : { "Ref" : "PrivateSubnet"  }
+  "Outputs": {
+    "SubnetId": {
+      "Description": "Private Subnet",
+      "Value": { "Ref": "PrivateSubnet"  }
     }
   }
 }

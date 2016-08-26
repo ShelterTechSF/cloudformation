@@ -14,6 +14,9 @@ defaults:
     InternetGateway:
       Stack: VPC
       Output: InternetGateway
+    NATSecurityGroup:
+      Stack: VPC
+      Output: NATSecurityGroup
     PublicSubnets: &PublicSubnets
       - Stack: PublicSubnetA
         Output: SubnetId
@@ -27,12 +30,18 @@ defaults:
         Output: SubnetId
       - Stack: PrivateSubnetB
         Output: SubnetId
-
+    PrivateSubnetSecurityGroup:  &PrivateSubnetSecurityGroup
+      Stack: VPC
+      Output: PrivateSubnetSecurityGroup
     ECSCluster:
       Stack: ECSCluster
       Output: ECSCluster
 
 stacks:
+
+  #######
+  # IAM #
+  #######
 
   - name: IAMInfrastructureGroup
     capabilities: CAPABILITY_IAM
@@ -42,8 +51,6 @@ stacks:
   ###################
 
   - name: VPC
-
-  - name: CommonSecurityGroup
 
   - name: PublicSubnetA
     template_name: PublicSubnet
@@ -62,18 +69,26 @@ stacks:
     parameters:
       AZ: *AZA
       CidrAZMask: '0'
-      NATGateway:
-        - Stack: PublicSubnetA
-          Output: NATGateway
+      NATInstance:
+        Stack: PublicSubnetA
+        Output: NATInstance
 
   - name: PrivateSubnetB
     template_name: PrivateSubnet
     parameters:
       AZ: *AZB
       CidrAZMask: '1'
-      NATGateway:
-        - Stack: PublicSubnetB
-          Output: NATGateway
+      NATInstance:
+        Stack: PublicSubnetB
+        Output: NATInstance
+
+  - name: Bastion
+    template_name: Bastion
+    parameters:
+      SubnetId:
+        Stack: PublicSubnetA
+        Output: SubnetId
+      InstanceType: t2.micro
 
   ################
   # AskDarcel DB #
@@ -81,6 +96,7 @@ stacks:
 
   - name: DB
     parameters:
+      SubnetIds: *PublicSubnets
       DBName: askdarcel
       DBEngine: postgres
       DBEngineVersion: '9.5'
@@ -88,22 +104,43 @@ stacks:
       DBInstanceClass: db.t2.micro
       DBUser: master
       DBPassword: changeme123
-      SubnetIds: *PublicSubnets
 
-  - name: Web
-    capabilities: CAPABILITY_IAM
-    parameters:
-      InstanceType: t2.micro
-      ASGMinSize: '1'
-      ASGMaxSize: '3'
-      HostedZone: askdarcel.org
-      DNSName: staging.askdarcel.org
+  #################
+  # ECS Resources #
+  #################
 
   - name: ECSCluster
     capabilities: CAPABILITY_IAM
     parameters:
-      MaxSize: '2'
+      DesiredCapacity: '2'
+      MinSize: '2'
+      MaxSize: '3'
       SubnetIds: *PrivateSubnets
-      SecurityGroupIds:
-        - Stack: CommonSecurityGroup
-          Output: SecurityGroupId
+      SecurityGroupIds: *PrivateSubnetSecurityGroup
+
+  - name: DockerHubECSDeployApi
+    capabilities: CAPABILITY_IAM
+    parameters:
+      Code:
+        File: './functions/docker_webhook.py'
+
+  - name: AskdarcelApiService
+    capabilities: CAPABILITY_IAM
+    parameters:
+      HostPort: '8080'
+      ContainerPort: '8080'
+      ContainerImage:  sheltertechsf/askdarcel-api:latest
+      DatabaseUrl:
+        Stack: DB
+        Output: DatabaseUrl
+      DatabaseUsername: master
+      DatabasePassword: changeme123
+
+  - name: AskdarcelWebService
+    capabilities: CAPABILITY_IAM
+    parameters:
+      HostPort: '8181'
+      ContainerPort: '80'
+      ContainerImage:  sheltertechsf/askdarcel-web:latest
+      ApiURL: 'http://internal-AskdarcelApiSe-ELB-YNXEJW6FWLRJ-423101223.us-east-1.elb.amazonaws.com'
+      ServerName: 'staging.askdarcel.org'

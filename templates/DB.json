@@ -95,5 +95,19 @@
         ]
       }
     }
+  },
+
+  "Outputs": {
+    "DatabaseUrl": {
+      "Description": "The connection endpoint for the database.",
+      "Value": { "Fn::Join": [ "", [
+	"postgres://",
+	{ "Fn::GetAtt": [ "DB", "Endpoint.Address" ] },
+	":",
+	{ "Fn::GetAtt": [ "DB", "Endpoint.Port" ] },
+	"/",
+	{ "Ref": "DBName" }
+      ]]}
+    }
   }
 }

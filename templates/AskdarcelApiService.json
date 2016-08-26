@@ -1,0 +1,196 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "VpcId" : {
+      "Type" : "String",
+      "Description" : "ID of the VPC"
+    },
+    "ContainerImage": {
+      "Type": "String",
+      "Description": "Reference to the image to deploy (e.g. a Dockerhub image).",
+      "Default": "sheltertechsf/askdarcel-api:latest"
+    },
+    "HostPort": {
+      "Type": "String",
+      "Description": "Host mapping of the exposed container port."
+    },
+    "ContainerPort": {
+      "Type": "String",
+      "Description": "Container port to expose on the host as HostPort."
+    },
+    "ECSCluster": {
+      "Type": "String",
+      "Description": "ECSCluster"
+    },
+    "PrivateSubnets": {
+      "Description": "Private subnets in which to place the ELB.",
+      "Type": "CommaDelimitedList"
+    },
+    "DatabaseUrl": {
+      "Description": "URL of the AskDarcel database.",
+      "Type": "String"
+    },
+    "DatabaseUsername": {
+      "Description": "AskDarcel API DB user.",
+      "Type": "String"
+    },
+    "DatabasePassword": {
+      "Description": "AskDarcel API DB user's password.",
+      "Type": "String",
+      "NoEcho": true
+    }
+  },
+
+  "Resources": {
+    "ELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+	"Scheme": "internal",
+        "Subnets" : { "Ref" : "PrivateSubnets" },
+        "SecurityGroups" : [ { "Ref" : "ELBSecurityGroup" } ],
+        "Listeners" : [
+          {
+	    "LoadBalancerPort" : "80",
+            "InstancePort": { "Ref": "HostPort" },
+            "Protocol" : "HTTP"
+          }
+        ]
+      }
+    },
+
+    "ELBSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Restricts ELB access.",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" :
+        [
+          { "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort": "80",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress" :
+        [
+          { "IpProtocol" : "tcp",
+            "FromPort" : { "Ref": "HostPort" },
+            "ToPort": { "Ref": "HostPort" },
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+
+    "TaskDefinition": {
+      "Type": "AWS::ECS::TaskDefinition",
+      "Properties": {
+	"ContainerDefinitions": [{
+	  "Name": "askdarcel-api",
+	  "Cpu": "1",
+	  "Essential": "true",
+	  "Image": { "Ref": "ContainerImage" },
+	  "Memory": "300",
+	  "PortMappings": [{
+	    "HostPort": { "Ref": "HostPort" },
+	    "ContainerPort": { "Ref": "ContainerPort" }
+	  }],
+	  "Environment": [
+	    {
+	      "Name": "SECRET_KEY_BASE",
+	      "Value": "4099a09eff3512f9f790bc23ae1a48ab17dc8aff12ee0926934aa4a8bd7ea091ead6142a510fb08569b4941ddeae104ee751d93f498688d9dcce524c4fbb352e"
+	    },
+	    {
+	      "Name": "DATABASE_URL",
+	      "Value": { "Ref": "DatabaseUrl" }
+	    },
+	    {
+	      "Name": "DATABASE_USERNAME",
+	      "Value": { "Ref": "DatabaseUsername" }
+	    },
+	    {
+	      "Name": "DATABASE_PASSWORD",
+	      "Value": { "Ref": "DatabasePassword" }
+	    }
+	  ]
+	}]
+      }
+    },
+
+    "Service": {
+      "Type": "AWS::ECS::Service",
+      "Properties": {
+	"Cluster": {
+	  "Ref": "ECSCluster"
+	},
+	"DesiredCount": "1",
+	"TaskDefinition": { "Ref": "TaskDefinition" },
+        "LoadBalancers": [
+          {
+            "ContainerName": "askdarcel-api",
+            "ContainerPort": { "Ref": "ContainerPort" },
+            "LoadBalancerName" : { "Ref" : "ELB" }
+          }
+        ],
+	"Role": { "Ref": "ServiceRole" }
+      }
+    },
+
+    "ServiceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ecs.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ecs-service",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticloadbalancing:Describe*",
+                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                    "ec2:Describe*",
+                    "ec2:AuthorizeSecurityGroupIngress"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "ELB": {
+      "Description": "The Askdarcel API loadbalancer.",
+      "Value": { "Ref": "ELB"  }
+    },
+    "Service": {
+      "Description": "The Askdarcel API ECS service.",
+      "Value": { "Ref": "Service"  }
+    },
+    "TaskDefinition": {
+      "Description": "The TaskDefinition to run.",
+      "Value": { "Ref": "TaskDefinition"  }
+    }
+  }
+}
