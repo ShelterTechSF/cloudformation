@@ -143,4 +143,5 @@ stacks:
       ContainerPort: '80'
       ContainerImage:  sheltertechsf/askdarcel-web:latest
       ApiURL: 'http://internal-AskdarcelApiSe-ELB-YNXEJW6FWLRJ-423101223.us-east-1.elb.amazonaws.com'
+      GoogleApiKey: 'AIzaSyDGSItsLk-8vy8SuO2z1CnYvQgVHv-0Rao'
       ServerName: 'staging.askdarcel.org'
