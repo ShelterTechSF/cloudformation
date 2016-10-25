@@ -10,6 +10,7 @@
   "Resources": {
     "APIDeployment": {
       "Type" : "AWS::ApiGateway::Deployment",
+      "DependsOn" : "DockerHubWebhookMethod",
       "Properties" : {
 	"Description" : "Deployment of the Dockerhub webhook CD endpoint.",
 	"RestApiId" : { "Ref": "API" },
