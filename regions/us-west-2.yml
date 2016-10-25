@@ -143,4 +143,5 @@ stacks:
       ContainerPort: '80'
       ContainerImage:  sheltertechsf/askdarcel-web:latest
       ApiURL: set-after-bringing-up-api
+      GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
       ServerName: 'askdarcel.org'
