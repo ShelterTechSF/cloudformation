@@ -1,0 +1,146 @@
+defaults:
+  parameters:
+    CidrBlock: '10.0'
+    AZA: &AZA 'us-east-1b'
+    AZB: &AZB 'us-east-1c'
+    AZs:
+      - *AZA
+      - *AZB
+    InstanceImageId: ami-311a1a5b
+    KeyName: sheltertech_prod_20161023
+    VpcId:
+      Stack: VPC
+      Output: VpcId
+    InternetGateway:
+      Stack: VPC
+      Output: InternetGateway
+    NATSecurityGroup:
+      Stack: VPC
+      Output: NATSecurityGroup
+    PublicSubnets: &PublicSubnets
+      - Stack: PublicSubnetA
+        Output: SubnetId
+      - Stack: PublicSubnetB
+        Output: SubnetId
+    PublicRouteTable:
+      Stack: VPC
+      Output: PublicRouteTable
+    PrivateSubnets: &PrivateSubnets
+      - Stack: PrivateSubnetA
+        Output: SubnetId
+      - Stack: PrivateSubnetB
+        Output: SubnetId
+    PrivateSubnetSecurityGroup:  &PrivateSubnetSecurityGroup
+      Stack: VPC
+      Output: PrivateSubnetSecurityGroup
+    ECSCluster:
+      Stack: ECSCluster
+      Output: ECSCluster
+
+stacks:
+
+  #######
+  # IAM #
+  #######
+
+  - name: IAMInfrastructureGroup
+    capabilities: CAPABILITY_IAM
+
+  ###################
+  # VPC and Subnets #
+  ###################
+
+  - name: VPC
+
+  - name: PublicSubnetA
+    template_name: PublicSubnet
+    parameters:
+      AZ: *AZA
+      CidrAZMask: '255'
+
+  - name: PublicSubnetB
+    template_name: PublicSubnet
+    parameters:
+      AZ: *AZB
+      CidrAZMask: '254'
+
+  - name: PrivateSubnetA
+    template_name: PrivateSubnet
+    parameters:
+      AZ: *AZA
+      CidrAZMask: '0'
+      NATInstance:
+        Stack: PublicSubnetA
+        Output: NATInstance
+
+  - name: PrivateSubnetB
+    template_name: PrivateSubnet
+    parameters:
+      AZ: *AZB
+      CidrAZMask: '1'
+      NATInstance:
+        Stack: PublicSubnetB
+        Output: NATInstance
+
+  - name: Bastion
+    template_name: Bastion
+    parameters:
+      SubnetId:
+        Stack: PublicSubnetA
+        Output: SubnetId
+      InstanceType: t2.micro
+
+  ################
+  # AskDarcel DB #
+  ################
+
+  - name: DB
+    parameters:
+      SubnetIds: *PublicSubnets
+      DBName: askdarcel
+      DBEngine: postgres
+      DBEngineVersion: '9.5'
+      DBAllocatedStorage: '10'
+      DBInstanceClass: db.t2.micro
+      DBUser: master
+      DBPassword: changeme123
+
+  #################
+  # ECS Resources #
+  #################
+
+  - name: ECSCluster
+    capabilities: CAPABILITY_IAM
+    parameters:
+      DesiredCapacity: '2'
+      MinSize: '2'
+      MaxSize: '3'
+      SubnetIds: *PrivateSubnets
+      SecurityGroupIds: *PrivateSubnetSecurityGroup
+
+  - name: DockerHubECSDeployApi
+    capabilities: CAPABILITY_IAM
+    parameters:
+      Code:
+        File: './functions/docker_webhook.py'
+
+  - name: AskdarcelApiService
+    capabilities: CAPABILITY_IAM
+    parameters:
+      HostPort: '8080'
+      ContainerPort: '8080'
+      ContainerImage:  sheltertechsf/askdarcel-api:latest
+      DatabaseUrl:
+        Stack: DB
+        Output: DatabaseUrl
+      DatabaseUsername: master
+      DatabasePassword: changeme123
+
+  - name: AskdarcelWebService
+    capabilities: CAPABILITY_IAM
+    parameters:
+      HostPort: '8181'
+      ContainerPort: '80'
+      ContainerImage:  sheltertechsf/askdarcel-web:latest
+      ApiURL: set-after-bringing-up-api
+      ServerName: 'askdarcel.org'
