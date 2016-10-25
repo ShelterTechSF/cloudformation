@@ -38,6 +38,10 @@
       "Type" : "String",
       "Description" : "The name of the HostedZone to create DNS records in.",
       "Default": "askdarcel.org."
+    },
+    "GoogleApiKey" : {
+      "Description" : "API Key for maps and geolocate",
+      "type" : "String"
     }
   },
 
@@ -123,7 +127,11 @@
 	    {
 	      "Name": "PORT",
 	      "Value": { "Ref": "ContainerPort" }
-	    }
+	    },
+      {
+        "Name" : "GOOGLE_API_KEY",
+        "Value" : { "Ref": "GoogleApiKey" }
+      }
 	  ]
 	}]
       }
