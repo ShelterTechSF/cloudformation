@@ -1,12 +1,12 @@
 defaults:
   parameters:
     CidrBlock: '10.0'
-    AZA: &AZA 'us-east-1b'
-    AZB: &AZB 'us-east-1c'
+    AZA: &AZA 'us-west-2a'
+    AZB: &AZB 'us-west-2b'
     AZs:
       - *AZA
       - *AZB
-    InstanceImageId: ami-311a1a5b
+    InstanceImageId: ami-7a2bc21a
     KeyName: sheltertech_prod_20161023
     VpcId:
       Stack: VPC
@@ -142,6 +142,6 @@ stacks:
       HostPort: '8181'
       ContainerPort: '80'
       ContainerImage:  sheltertechsf/askdarcel-web:latest
-      ApiURL: set-after-bringing-up-api
+      ApiURL: http://internal-AskdarcelApiSe-ELB-1WWTOXY9KOL7H-1520097073.us-west-2.elb.amazonaws.com
       GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
-      ServerName: 'askdarcel.org'
+      ServerName: 'www.askdarcel.org'

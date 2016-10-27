@@ -41,7 +41,7 @@
     },
     "GoogleApiKey" : {
       "Description" : "API Key for maps and geolocate",
-      "type" : "String"
+      "Type" : "String"
     }
   },
 
