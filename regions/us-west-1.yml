@@ -1,5 +1,0 @@
-defaults:
-  parameters:
-    CidrBlock: '10.0'
-stacks:
-  - name: VPC

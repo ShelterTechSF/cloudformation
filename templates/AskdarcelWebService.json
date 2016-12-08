@@ -42,6 +42,10 @@
     "GoogleApiKey" : {
       "Description" : "API Key for maps and geolocate",
       "Type" : "String"
+    },
+    "SSLCertficiate": {
+      "Description": "SSL Certificate ARN.",
+      "Type": "String"
     }
   },
 
@@ -69,6 +73,12 @@
           { "LoadBalancerPort": "80",
             "InstancePort": { "Ref": "HostPort" },
             "Protocol": "HTTP"
+          },
+          {
+            "InstancePort" : { "Ref": "HostPort" },
+            "LoadBalancerPort" : "443",
+            "Protocol" : "HTTPS",
+            "SSLCertificateId" : { "Ref": "SSLCertificate" }
           }
         ]
       }
@@ -85,6 +95,11 @@
             "FromPort": "80",
             "ToPort": "80",
             "CidrIp": "0.0.0.0/0"
+          },
+          { "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort": "443",
+            "CidrIp" : "0.0.0.0/0"
           }
         ],
         "SecurityGroupEgress":
