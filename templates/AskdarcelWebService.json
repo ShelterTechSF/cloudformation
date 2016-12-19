@@ -43,7 +43,7 @@
       "Description" : "API Key for maps and geolocate",
       "Type" : "String"
     },
-    "SSLCertficiate": {
+    "SSLCertificate": {
       "Description": "SSL Certificate ARN.",
       "Type": "String"
     }
