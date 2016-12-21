@@ -7,7 +7,7 @@ defaults:
       - *AZA
       - *AZB
     InstanceImageId: ami-311a1a5b
-    KeyName: sheltertech_staging_20160825
+    KeyName: sheltertech_staging_20161212
     VpcId:
       Stack: VPC
       Output: VpcId
@@ -112,8 +112,8 @@ stacks:
   - name: ECSCluster
     capabilities: CAPABILITY_IAM
     parameters:
-      DesiredCapacity: '2'
-      MinSize: '2'
+      DesiredCapacity: '1'
+      MinSize: '1'
       MaxSize: '3'
       SubnetIds: *PrivateSubnets
       SecurityGroupIds: *PrivateSubnetSecurityGroup
@@ -145,3 +145,4 @@ stacks:
       GoogleApiKey: 'AIzaSyDGSItsLk-8vy8SuO2z1CnYvQgVHv-0Rao'
       ApiURL: 'http://internal-AskdarcelApiSe-ELB-SCK0WWO36AMZ-733790737.us-east-1.elb.amazonaws.com'
       ServerName: 'staging.askdarcel.org'
+      SSLCertificate: arn:aws:acm:us-east-1:146628616424:certificate/77f1e2a7-b740-4283-8b36-4047284b11e7
