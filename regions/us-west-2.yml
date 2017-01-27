@@ -112,8 +112,8 @@ stacks:
   - name: ECSCluster
     capabilities: CAPABILITY_IAM
     parameters:
-      DesiredCapacity: '2'
-      MinSize: '2'
+      DesiredCapacity: '1'
+      MinSize: '1'
       MaxSize: '3'
       SubnetIds: *PrivateSubnets
       SecurityGroupIds: *PrivateSubnetSecurityGroup
@@ -129,7 +129,7 @@ stacks:
     parameters:
       HostPort: '8080'
       ContainerPort: '8080'
-      ContainerImage:  sheltertechsf/askdarcel-api:latest
+      ContainerImage:  sheltertechsf/askdarcel-api:branch-release-1.0.0.0
       DatabaseUrl:
         Stack: DB
         Output: DatabaseUrl
@@ -141,7 +141,8 @@ stacks:
     parameters:
       HostPort: '8181'
       ContainerPort: '80'
-      ContainerImage:  sheltertechsf/askdarcel-web:latest
+      ContainerImage:  sheltertechsf/askdarcel-web:branch-release-1.0.0.0
       ApiURL: http://internal-AskdarcelApiSe-ELB-1WWTOXY9KOL7H-1520097073.us-west-2.elb.amazonaws.com
       GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
       ServerName: 'www.askdarcel.org'
+      SSLCertificate: arn:aws:acm:us-west-2:146628616424:certificate/2ff90833-bd30-43b9-b09d-5ff5ab39b0a6
