@@ -90,7 +90,7 @@
 	  "Cpu": "1",
 	  "Essential": "true",
 	  "Image": { "Ref": "ContainerImage" },
-	  "Memory": "300",
+	  "Memory": "1000",
 	  "PortMappings": [{
 	    "HostPort": { "Ref": "HostPort" },
 	    "ContainerPort": { "Ref": "ContainerPort" }

@@ -20,7 +20,7 @@
     },
     "MinSize": {
       "Type": "Number",
-      "Default" : "2",
+      "Default" : "1",
       "Description": "Minimum number of instances that can be launched in your ECS cluster"
     },
     "MaxSize": {
@@ -31,7 +31,7 @@
     "InstanceType" : {
       "Description" : "The EC2 instance type",
       "Type" : "String",
-      "Default" : "t2.micro",
+      "Default" : "t2.small",
       "AllowedValues" : [ "t2.micro", "t2.small", "t2.medium", "m3.medium", "m3.large", "m3.xlarge",
 "m3.2xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge",
 "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge",
@@ -52,14 +52,8 @@
 
   "Mappings" : {
     "AWSRegionToAMI" : {
-      "us-east-1"      : { "AMIID" : "ami-2b3b6041" },
-      "us-west-2"      : { "AMIID" : "ami-ac6872cd" },
-      "eu-west-1"      : { "AMIID" : "ami-03238b70" },
-      "ap-northeast-1" : { "AMIID" : "ami-fb2f1295" },
-      "ap-southeast-2" : { "AMIID" : "ami-43547120" },
-      "us-west-1"      : { "AMIID" : "ami-bfe095df" },
-      "ap-southeast-1" : { "AMIID" : "ami-c78f43a4" },
-      "eu-central-1"   : { "AMIID" : "ami-e1e6f88d" }
+      "us-east-1"      : { "AMIID" : "ami-d69c74c0" },
+      "us-west-2"      : { "AMIID" : "ami-8e7bc4ee" }
     }
   },
 
