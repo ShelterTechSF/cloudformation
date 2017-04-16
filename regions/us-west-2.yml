@@ -112,8 +112,8 @@ stacks:
   - name: ECSCluster
     capabilities: CAPABILITY_IAM
     parameters:
-      DesiredCapacity: '1'
-      MinSize: '1'
+      DesiredCapacity: '2'
+      MinSize: '2'
       MaxSize: '3'
       SubnetIds: *PrivateSubnets
       SecurityGroupIds: *PrivateSubnetSecurityGroup

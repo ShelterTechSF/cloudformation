@@ -20,7 +20,7 @@
     },
     "MinSize": {
       "Type": "Number",
-      "Default" : "1",
+      "Default" : "2",
       "Description": "Minimum number of instances that can be launched in your ECS cluster"
     },
     "MaxSize": {
