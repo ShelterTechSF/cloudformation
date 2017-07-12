@@ -135,6 +135,8 @@ stacks:
         Output: DatabaseUrl
       DatabaseUsername: master
       DatabasePassword: changeme123
+      AlgoliaApplicationId: PLACEHOLDER
+      AlgoliaApiKey: PLACEHOLDER
 
   - name: AskdarcelWebService
     capabilities: CAPABILITY_IAM

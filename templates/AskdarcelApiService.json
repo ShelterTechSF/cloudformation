@@ -38,6 +38,16 @@
       "Description": "AskDarcel API DB user's password.",
       "Type": "String",
       "NoEcho": true
+    },
+    "AlgoliaApplicationId": {
+      "Description": "Algolia Application Id",
+      "Type": "String",
+      "NoEcho": true
+    },
+    "AlgoliaApiKey": {
+      "Description": "Algolia API key",
+      "Type": "String",
+      "NoEcho": true
     }
   },
 
@@ -111,6 +121,14 @@
 	    {
 	      "Name": "DATABASE_PASSWORD",
 	      "Value": { "Ref": "DatabasePassword" }
+	    },
+	    {
+	      "Name": "ALGOLIA_APPLICATION_ID",
+	      "Value": { "Ref": "AlgoliaApplicationId" }
+	    },
+	    {
+	      "Name": "ALGOLIA_API_KEY",
+	      "Value": { "Ref": "AlgoliaApiKey" }
 	    }
 	  ]
 	}]
