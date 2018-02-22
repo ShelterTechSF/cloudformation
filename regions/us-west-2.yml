@@ -129,7 +129,7 @@ stacks:
     parameters:
       HostPort: '8080'
       ContainerPort: '8080'
-      ContainerImage:  sheltertechsf/askdarcel-api:branch-release-1.0.1.1
+      ContainerImage:  sheltertechsf/askdarcel-api:v1.9.0
       DatabaseUrl:
         Stack: DB
         Output: DatabaseUrl
@@ -137,13 +137,14 @@ stacks:
       DatabasePassword: changeme123
       AlgoliaApplicationId: PLACEHOLDER
       AlgoliaApiKey: PLACEHOLDER
+      AlgoliaIndexPrefix: production
 
   - name: AskdarcelWebService
     capabilities: CAPABILITY_IAM
     parameters:
       HostPort: '8181'
       ContainerPort: '80'
-      ContainerImage:  sheltertechsf/askdarcel-web:branch-release-1.0.1.1
+      ContainerImage:  sheltertechsf/askdarcel-web:v1.9.0
       ApiURL: http://internal-AskdarcelApiSe-ELB-1WWTOXY9KOL7H-1520097073.us-west-2.elb.amazonaws.com
       GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
       ServerName: 'www.askdarcel.org'

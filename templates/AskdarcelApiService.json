@@ -48,6 +48,10 @@
       "Description": "Algolia API key",
       "Type": "String",
       "NoEcho": true
+    },
+    "AlgoliaIndexPrefix": {
+      "Description": "Algolia Index Prefix",
+      "Type": "String"
     }
   },
 
@@ -100,7 +104,7 @@
 	  "Cpu": "1",
 	  "Essential": "true",
 	  "Image": { "Ref": "ContainerImage" },
-	  "Memory": "1000",
+	  "Memory": "1500",
 	  "PortMappings": [{
 	    "HostPort": { "Ref": "HostPort" },
 	    "ContainerPort": { "Ref": "ContainerPort" }
@@ -129,7 +133,11 @@
 	    {
 	      "Name": "ALGOLIA_API_KEY",
 	      "Value": { "Ref": "AlgoliaApiKey" }
-	    }
+	    },
+        {
+          "Name": "ALGOLIA_INDEX_PREFIX",
+          "Value": { "Ref": "AlgoliaIndexPrefix" }
+        }
 	  ]
 	}]
       }

@@ -137,6 +137,7 @@ stacks:
       DatabasePassword: changeme123
       AlgoliaApplicationId: PLACEHOLDER
       AlgoliaApiKey: PLACEHOLDER
+      AlgoliaIndexPrefix: staging
 
   - name: AskdarcelWebService
     capabilities: CAPABILITY_IAM
