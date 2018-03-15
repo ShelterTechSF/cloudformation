@@ -129,7 +129,7 @@ stacks:
     parameters:
       HostPort: '8080'
       ContainerPort: '8080'
-      ContainerImage:  sheltertechsf/askdarcel-api:v1.9.0
+      ContainerImage:  sheltertechsf/askdarcel-api:v1.9.2
       DatabaseUrl:
         Stack: DB
         Output: DatabaseUrl
