@@ -148,4 +148,4 @@ stacks:
       ApiURL: http://internal-AskdarcelApiSe-ELB-1WWTOXY9KOL7H-1520097073.us-west-2.elb.amazonaws.com
       GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
       ServerName: 'www.askdarcel.org'
-      SSLCertificate: arn:aws:acm:us-west-2:146628616424:certificate/2ff90833-bd30-43b9-b09d-5ff5ab39b0a6
+      SSLCertificate: arn:aws:iam::146628616424:server-certificate/cf-origin-cert
