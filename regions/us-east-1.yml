@@ -138,7 +138,7 @@ stacks:
       AlgoliaApplicationId: J8TVT53HPZ
       AlgoliaReadOnlyApiKey: fdf77b152ff7ce0ea4e4221ff3d17d85
       AlgoliaIndex: staging_services_search
-      AlgoliaApiKey: fdf77b152ff7ce0ea4e4221ff3d17d85
+      AlgoliaApiKey: f8a0543e1a8db699f6359eeb11ebcd9d
       AlgoliaIndexPrefix: staging
 
   - name: AskdarcelWebService
