@@ -46,6 +46,18 @@
     "SSLCertificate": {
       "Description": "SSL Certificate ARN.",
       "Type": "String"
+    },
+    "AlgoliaApplicationId": {
+      "Description": "ID of Algolia app",
+      "Type": "String"
+    },	
+    "AlgoliaIndex": {
+      "Description": "Algolia Index Name",
+      "Type": "String"
+    },
+    "AlgoliaReadOnlyApiKey": {
+      "Description": "Algolia API key",
+      "Type": "String"
     }
   },
 
@@ -146,6 +158,18 @@
       {
         "Name" : "GOOGLE_API_KEY",
         "Value" : { "Ref": "GoogleApiKey" }
+      },
+      {
+        "Name": "ALGOLIA_APPLICATION_ID",
+        "Value": { "Ref": "AlgoliaApplicationId" }
+      },
+      {
+        "Name": "ALGOLIA_INDEX",
+        "Value": { "Ref": "AlgoliaIndex" }
+      },
+      {
+        "Name": "ALGOLIA_READ_ONLY_API_KEY",
+        "Value": { "Ref": "AlgoliaReadOnlyApiKey" }
       }
 	  ]
 	}]

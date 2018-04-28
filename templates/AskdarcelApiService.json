@@ -52,6 +52,14 @@
     "AlgoliaIndexPrefix": {
       "Description": "Algolia Index Prefix",
       "Type": "String"
+    },
+    "AlgoliaIndex": {
+      "Description": "Algolia Index Name",
+      "Type": "String"
+    },
+    "AlgoliaReadOnlyApiKey": {
+      "Description": "Algolia API key",
+      "Type": "String"
     }
   },
 
@@ -134,10 +142,18 @@
 	      "Name": "ALGOLIA_API_KEY",
 	      "Value": { "Ref": "AlgoliaApiKey" }
 	    },
-        {
-          "Name": "ALGOLIA_INDEX_PREFIX",
-          "Value": { "Ref": "AlgoliaIndexPrefix" }
-        }
+      {
+        "Name": "ALGOLIA_INDEX_PREFIX",
+        "Value": { "Ref": "AlgoliaIndexPrefix" }
+      },
+      {
+        "Name": "ALGOLIA_INDEX",
+        "Value": { "Ref": "AlgoliaIndex" }
+      },
+      {
+        "Name": "ALGOLIA_READ_ONLY_API_KEY",
+        "Value": { "Ref": "AlgoliaReadOnlyApiKey" }
+      }
 	  ]
 	}]
       }
