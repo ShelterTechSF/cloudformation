@@ -55,6 +55,10 @@
       "Description": "Algolia Index Name",
       "Type": "String"
     },
+    "AlgoliaIndexPrefix": {
+      "Description": "Algolia Index Prefix Name",
+      "Type": "String"
+    },
     "AlgoliaReadOnlyApiKey": {
       "Description": "Algolia API key",
       "Type": "String"

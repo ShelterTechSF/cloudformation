@@ -154,4 +154,5 @@ stacks:
       AlgoliaApplicationId: J8TVT53HPZ
       AlgoliaReadOnlyApiKey: fdf77b152ff7ce0ea4e4221ff3d17d85
       AlgoliaIndex: staging_services_search
+      AlgoliaIndexPrefix: staging
 
