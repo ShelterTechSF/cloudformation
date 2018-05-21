@@ -168,6 +168,10 @@
         "Value": { "Ref": "AlgoliaIndex" }
       },
       {
+        "Name": "ALGOLIA_INDEX_PREFIX",
+        "Value": { "Ref": "AlgoliaIndexPrefix" }
+      },
+      {
         "Name": "ALGOLIA_READ_ONLY_API_KEY",
         "Value": { "Ref": "AlgoliaReadOnlyApiKey" }
       }
