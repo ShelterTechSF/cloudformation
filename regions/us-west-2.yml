@@ -129,7 +129,7 @@ stacks:
     parameters:
       HostPort: '8080'
       ContainerPort: '8080'
-      ContainerImage:  sheltertechsf/askdarcel-api:v1.9.2
+      ContainerImage:  sheltertechsf/askdarcel-api:v1.10
       DatabaseUrl:
         Stack: DB
         Output: DatabaseUrl
@@ -144,8 +144,13 @@ stacks:
     parameters:
       HostPort: '8181'
       ContainerPort: '80'
-      ContainerImage:  sheltertechsf/askdarcel-web:v1.9.0
+      ContainerImage:  sheltertechsf/askdarcel-web:v1.10
       ApiURL: http://internal-AskdarcelApiSe-ELB-1WWTOXY9KOL7H-1520097073.us-west-2.elb.amazonaws.com
       GoogleApiKey: 'AIzaSyCkHNLZxT4LrxSgi_8Vrf26VdRf1XOWMuM'
       ServerName: 'www.askdarcel.org'
       SSLCertificate: arn:aws:iam::146628616424:server-certificate/cf-origin-cert
+      AlgoliaApplicationId: PLACEHOLDER
+      AlgoliaReadOnlyApiKey: PLACEHOLDER
+      AlgoliaIndex: production_services_search
+      AlgoliaIndexPrefix: production
+

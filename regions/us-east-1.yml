@@ -148,7 +148,7 @@ stacks:
       ContainerPort: '80'
       ContainerImage:  sheltertechsf/askdarcel-web:latest
       GoogleApiKey: 'AIzaSyDGSItsLk-8vy8SuO2z1CnYvQgVHv-0Rao'
-      ApiURL: 'http://internal-AskdarcelApiSe-ELB-1DJOSCPJR8KPG-1389291091.us-east-1.elb.amazonaws.com'
+      ApiURL: 'http://internal-AskdarcelApiSe-ELB-1DKR1RZJU15EW-1246689357.us-east-1.elb.amazonaws.com'
       ServerName: 'staging.askdarcel.org'
       SSLCertificate: arn:aws:iam::146628616424:server-certificate/cf-origin-cert
       AlgoliaApplicationId: J8TVT53HPZ
