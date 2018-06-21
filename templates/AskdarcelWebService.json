@@ -138,6 +138,14 @@
 	  "Essential": "true",
 	  "Image": { "Ref": "ContainerImage" },
 	  "Memory": "300",
+      "LogConfiguration": {
+        "LogDriver": "awslogs",
+        "Options": {
+          "awslogs-group": "web",
+          "awslogs-region": { "Ref" : "AWS::Region" },
+          "awslogs-stream-prefix": "web"
+        }
+      },
 	  "PortMappings": [{
 	    "HostPort": { "Ref": "HostPort" },
 	    "ContainerPort": { "Ref": "ContainerPort" }
